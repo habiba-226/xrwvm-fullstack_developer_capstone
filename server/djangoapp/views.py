@@ -39,7 +39,6 @@ def login_user(request):
     return JsonResponse(data)
 
 # Create a `logout_request` view to handle sign out request
-# Create a `logout_request` view to handle sign out request
 def logout_request(request):
     if request.user.is_authenticated:
         username = request.user.username  # Get the username before logout
@@ -48,10 +47,42 @@ def logout_request(request):
         return JsonResponse(data)
     else:
         return JsonResponse({"error": "User is not logged in."}, status=400)
+    
 # Create a `registration` view to handle sign up request
-# @csrf_exempt
-# def registration(request):
-# ...
+@csrf_exempt
+def registration(request):
+    context = {}
+    data = json.loads(request.body)
+    
+    # Extract data from the request
+    username = data['userName']
+    password = data['password']
+    first_name = data['firstName']
+    last_name = data['lastName']
+    email = data['email']
+    
+    username_exist = False
+    
+    # Check if the username already exists
+    try:
+        User.objects.get(username=username)
+        username_exist = True
+    except User.DoesNotExist:
+        logger.debug("{} is a new user".format(username))
+    
+    # If the username does not exist, create a new user
+    if not username_exist:
+        user = User.objects.create_user(username=username, 
+                                         first_name=first_name, 
+                                         last_name=last_name,
+                                         password=password, 
+                                         email=email)
+        login(request, user)  # Log in the user
+        data = {"userName": username, "status": "Authenticated"}
+        return JsonResponse(data)
+    else:
+        data = {"userName": username, "error": "Already Registered"}
+        return JsonResponse(data)
 
 # # Update the `get_dealerships` view to render the index page with
 # a list of dealerships
