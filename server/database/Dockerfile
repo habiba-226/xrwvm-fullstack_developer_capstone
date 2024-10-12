@@ -1,16 +1,18 @@
-FROM node:18.12.1-bullseye-slim
+# Set the working directory inside the database folder
+WORKDIR /app/database
 
-RUN npm install -g npm@9.1.3
+# Copy package.json and package-lock.json first for better caching
+COPY package.json ./ 
+COPY package-lock.json ./ 
 
-ADD package.json .
-ADD app.js .
-ADD review.js .
-ADD dealership.js .
-ADD data/dealerships.json .
-ADD data/reviews.json .
-COPY . .
+# Install dependenciesa
 RUN npm install
 
+# Copy the rest of the application code
+COPY . .
+
+# Expose the application port
 EXPOSE 3030
 
-CMD [ "node", "app.js" ]
+# Command to run the application
+CMD ["node", "app.js"]

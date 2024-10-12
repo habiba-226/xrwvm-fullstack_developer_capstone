@@ -1,4 +1,5 @@
 # Uncomment the required imports before adding the code
+from .models import CarMake, CarModel
 
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse
@@ -100,3 +101,25 @@ def registration(request):
 # Create a `add_review` view to submit a review
 # def add_review(request):
 # ...
+def get_cars(request):
+    # Count the number of car makes in the database
+    count = CarMake.objects.count()
+    print(count)
+    
+    # If there are no car makes, call the initiate function to populate the database
+    if count == 0:
+        initiate()  # Call initiate to populate the database if empty
+
+    # Fetch car models with their associated car make using select_related
+    car_models = CarModel.objects.select_related('make')  # Use 'make' to refer to the foreign key
+
+    # Create a list of dictionaries to hold car model and make data
+    cars = []
+    for car_model in car_models:
+        cars.append({
+            "CarModel": car_model.name,
+            "CarMake": car_model.make.name  # Use 'make' instead of 'car_make'
+        })
+
+    # Return the list of car models as a JSON response
+    return JsonResponse({"CarModels": cars})
