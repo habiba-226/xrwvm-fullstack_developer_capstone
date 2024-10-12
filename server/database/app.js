@@ -9,11 +9,12 @@ app.use(cors());
 app.use(express.json()); // Change to use express.json()
 
 // Load data from JSON files
-let reviews_data, dealerships_data;
+let reviews_data, dealerships_data, car_records_data;
 
 try {
   reviews_data = JSON.parse(fs.readFileSync('./data/reviews.json'));
   dealerships_data = JSON.parse(fs.readFileSync('./data/dealerships.json', 'utf8'));
+  car_records_data = JSON.parse(fs.readFileSync('./data/car_records.json', 'utf8')); // Load car records
 } catch (error) {
   console.error('Error reading JSON files:', error);
 }
@@ -98,6 +99,27 @@ app.get('/fetchDealer/:id', async (req, res) => {
     res.json(dealer);
   } catch (error) {
     res.status(500).json({ error: 'Error fetching dealer' });
+  }
+});
+
+// Express route to fetch car makes and models
+app.get('/api/car-makes', (req, res) => {
+  try {
+    const carMakes = car_records_data.cars.reduce((acc, car) => {
+      const existingMake = acc.find(item => item.make === car.make);
+      if (existingMake) {
+        if (!existingMake.models.includes(car.model)) {
+          existingMake.models.push(car.model);
+        }
+      } else {
+        acc.push({ make: car.make, models: [car.model] });
+      }
+      return acc;
+    }, []);
+    
+    res.json(carMakes);
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching car makes' });
   }
 });
 
