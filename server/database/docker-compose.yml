@@ -9,8 +9,9 @@ services:
     volumes:
       - mongo_data:/data/db
 
-  # Node api service
+  # Node API service
   api:
+    build: .
     image: nodeapp
     ports:
       - 3030:3030
